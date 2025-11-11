@@ -7,19 +7,9 @@ python + one 代码库 - A reusable Python utility library
 You can install this package directly from GitHub:
 
 ```bash
-pip install git+https://github.com/USERNAME/pythone.git
-```
-
-To install a specific branch:
-
-```bash
-pip install git+https://github.com/USERNAME/pythone.git@dev
-```
-
-To install a specific version tag:
-
-```bash
-pip install git+https://github.com/USERNAME/pythone.git@v0.1.0
+pip install git+https://github.com/lixianmin/pythone.git
+pip install git+https://github.com/lixianmin/pythone.git@dev
+pip install git+https://github.com/lixianmin/pythone.git@v0.1.0
 ```
 
 ## Usage
@@ -27,18 +17,9 @@ pip install git+https://github.com/USERNAME/pythone.git@v0.1.0
 After installation, you can import and use the utilities:
 
 ```python
-from pythone.utils import example_function, safe_divide
+from pythone.logo import logo
 
-# Example 1: Using example_function
-result = example_function("hello")
-print(result)  # Output: Hello, from pythone!
-
-# Example 2: Safe division
-result = safe_divide(10, 2)
-print(result)  # Output: 5.0
-
-result = safe_divide(10, 0, default=-1)
-print(result)  # Output: -1
+logo.info(f"hello")
 ```
 
 ## Development
@@ -47,7 +28,7 @@ To set up for local development:
 
 ```bash
 # Clone the repository
-git clone https://github.com/USERNAME/pythone.git
+git clone https://github.com/lixianmin/pythone.git
 cd pythone
 
 # Install in editable mode
@@ -61,7 +42,7 @@ pythone/
 ├── src/
 │   └── pythone/
 │       ├── __init__.py
-│       └── utils.py
+│       └── logo.py
 ├── pyproject.toml
 ├── README.md
 └── LICENSE
@@ -73,4 +54,4 @@ pythone/
 
 ## License
 
-MIT License
+Apache License
