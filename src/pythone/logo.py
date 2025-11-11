@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
 from typing import Optional
-import inspect
 import threading
 
 
@@ -29,7 +28,7 @@ def setup_logo(
     Setup and configure a logo (logger) instance
     
     Args:
-        name: Logger name (if None, automatically detects caller's module name)
+        name: Logger name (if None, defaults to root logger)
         level: Log level (DEBUG, INFO, WARN, ERROR, CRITICAL)
         format_string: Custom format string
         log_file: Log file path (if None, defaults to logs/{name}.log)
@@ -39,20 +38,6 @@ def setup_logo(
     Returns:
         Configured logger instance
     """
-    # 如果没有提供name，自动检测调用方的模块名
-    if name is None:
-        frame = inspect.currentframe()
-        if frame and frame.f_back:
-            caller_module = inspect.getmodule(frame.f_back)
-            if caller_module and hasattr(caller_module, '__name__'):
-                name = caller_module.__name__
-                # 提取顶级包名
-                name = name.split('.')[0]
-            else:
-                name = 'root'
-        else:
-            name = 'root'
-    
     logo_instance = logging.getLogger(name)
     
     # Avoid adding multiple handlers if logo already exists
@@ -85,7 +70,9 @@ def setup_logo(
         # Create logs directory if it doesn't exist
         logs_dir = Path("logs")
         logs_dir.mkdir(exist_ok=True)
-        log_file = logs_dir / f"{name.replace('.', '_')}.log"
+        # 如果name为空，使用 "app.log" 作为默认文件名
+        file_name = name.replace('.', '_') if name else "app"
+        log_file = logs_dir / f"{file_name}.log"
     else:
         log_file = Path(log_file)
         log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -116,16 +103,7 @@ def get_logo() -> logging.Logger:
     if _logo_instance is None:
         with _logo_lock:
             if _logo_instance is None:
-                # 自动检测调用方的模块名
-                frame = inspect.currentframe()
-                caller_name = "pythone"  # 默认值
-                
-                if frame and frame.f_back and frame.f_back.f_back:
-                    caller_module = inspect.getmodule(frame.f_back.f_back)
-                    if caller_module and hasattr(caller_module, '__name__'):
-                        caller_name = caller_module.__name__.split('.')[0]
-                
-                _logo_instance = setup_logo(caller_name)
+                _logo_instance = setup_logo()
     
     return _logo_instance
 
