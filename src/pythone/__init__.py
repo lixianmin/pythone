@@ -6,7 +6,7 @@ A reusable Python utility library.
 
 __version__ = "0.1.0"
 
-from pythone.logo import *
+from pythone.logo import logo
 
-__all__ = ["__version__", "setup_logo", "logo"]
+__all__ = ["__version__", "logo"]
 

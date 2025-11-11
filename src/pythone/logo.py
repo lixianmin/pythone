@@ -8,10 +8,17 @@ import os
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
 from typing import Optional
+import inspect
+import threading
+
+
+# 线程锁，确保全局logo创建时的线程安全
+_logo_lock = threading.Lock()
+_logo_instance = None
 
 
 def setup_logo(
-    name: str,
+    name: Optional[str] = None,
     level: Optional[str] = None,
     format_string: Optional[str] = None,
     log_file: Optional[str] = None,
@@ -22,7 +29,7 @@ def setup_logo(
     Setup and configure a logo (logger) instance
     
     Args:
-        name: Logger name (typically __name__)
+        name: Logger name (if None, automatically detects caller's module name)
         level: Log level (DEBUG, INFO, WARN, ERROR, CRITICAL)
         format_string: Custom format string
         log_file: Log file path (if None, defaults to logs/{name}.log)
@@ -32,6 +39,20 @@ def setup_logo(
     Returns:
         Configured logger instance
     """
+    # 如果没有提供name，自动检测调用方的模块名
+    if name is None:
+        frame = inspect.currentframe()
+        if frame and frame.f_back:
+            caller_module = inspect.getmodule(frame.f_back)
+            if caller_module and hasattr(caller_module, '__name__'):
+                name = caller_module.__name__
+                # 提取顶级包名
+                name = name.split('.')[0]
+            else:
+                name = 'root'
+        else:
+            name = 'root'
+    
     logo_instance = logging.getLogger(name)
     
     # Avoid adding multiple handlers if logo already exists
@@ -82,5 +103,32 @@ def setup_logo(
     return logo_instance
 
 
-# Global logo instance
-logo = setup_logo("rim.translator")
+def get_logo() -> logging.Logger:
+    """
+    Get or create the global thread-safe logo instance
+    
+    Returns:
+        Thread-safe global logger instance
+    """
+    global _logo_instance
+    
+    # 双重检查锁定模式（Double-Checked Locking）
+    if _logo_instance is None:
+        with _logo_lock:
+            if _logo_instance is None:
+                # 自动检测调用方的模块名
+                frame = inspect.currentframe()
+                caller_name = "pythone"  # 默认值
+                
+                if frame and frame.f_back and frame.f_back.f_back:
+                    caller_module = inspect.getmodule(frame.f_back.f_back)
+                    if caller_module and hasattr(caller_module, '__name__'):
+                        caller_name = caller_module.__name__.split('.')[0]
+                
+                _logo_instance = setup_logo(caller_name)
+    
+    return _logo_instance
+
+
+# Global logo instance - 线程安全的延迟初始化
+logo = get_logo()
